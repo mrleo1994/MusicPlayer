@@ -33,7 +33,8 @@ const app = {
   isPlaying: false,
   isRandom: false,
   isRepeat: false,
-  setting: JSON.stringify(),
+  config: JSON.parse(localStorage.getItem(PLAYER_STORAGE_KEY)) || {},
+
   songs: [
     {
       name: "Lối Nhỏ",
@@ -96,6 +97,10 @@ const app = {
       image: "path_to_dung_hoi_em_image.jpg",
     },
   ],
+  setConfig: function (key, value) {
+    this.config[key] = value;
+    localStorage.setItem(PLAYER_STORAGE_KEY, JSON.stringify(this.config));
+  },
   render: function () {
     const htmls = this.songs.map((song, index) => {
       return `<div class="song ${
@@ -210,11 +215,13 @@ const app = {
     // khi random bài hát
     randomBtn.onclick = function () {
       _this.isRandom = !_this.isRandom;
+      _this.setConfig("isRandom", _this.isRandom);
       randomBtn.classList.toggle("active", _this.isRandom);
     };
     // khi repeat bài hát
     repeatBtn.onclick = function (e) {
       _this.isRepeat = !_this.isRepeat;
+      _this.setConfig("isRepeat", _this.isRepeat);
       repeatBtn.classList.toggle("active", _this.isRepeat);
     };
     // khi song ended
@@ -255,6 +262,10 @@ const app = {
     cdThumb.style.backgroundImage = `url('${this.currentSong.image}')`;
     audio.src = this.currentSong.path;
   },
+  loadConfig: function () {
+    this.isRandom = this.config.isRandom;
+    this.isRepeat = this.config.isRepeat;
+  },
   nextSong: function () {
     this.currentIndex++;
     if (this.currentIndex >= this.songs.length) {
@@ -278,10 +289,14 @@ const app = {
     this.loadCurrentSong();
   },
   start: function () {
+    this.loadConfig(); // gán cấu hình từ config vào ứng dụng
     this.defineProperties(); //  Định nghĩa thuộc tính
     this.handleEvents(); // lắng nghe / xử lý các sự kiện (DOM events)
     this.loadCurrentSong(); // tải thông tin bài hát đầu tiên
     this.render(); // render playlist
+    // hiển thị trạng thái ban đầu của button repeat and random
+    randomBtn.classList.toggle("active", _this.isRandom);
+    repeatBtn.classList.toggle("active", _this.isRepeat);
   },
 };
 
